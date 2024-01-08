@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using GuestsBook.Models;
+using StoringPassword.Models;
 
 namespace StoringPassword.Models
 {

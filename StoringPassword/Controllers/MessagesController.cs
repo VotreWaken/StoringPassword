@@ -1,37 +1,56 @@
-﻿using GuestsBook.Models;
+﻿using StoringPassword.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Core.Types;
-using StoringPassword.Models;
-
+using System.Linq.Expressions;
 namespace StoringPassword.Controllers
 {
     public class MessagesController : Controller
     {
         private readonly UserContext _context;
 
+        // Controller Constructor
         public MessagesController(UserContext context)
         {
             _context = context;
         }
+
+        // Controller Index
         public async Task<IActionResult> Index() => View(await GetAllMessages());
 
+        // Controller 
         public async Task<List<Message>> GetAllMessages()
         {
-            var myDbContext = _context.Messages.Include(x => x.User);
-            return await myDbContext.ToListAsync();
+            var allMessages = await GetMessages(m => true);
+            return allMessages;
         }
 
-        public async Task<IActionResult> MyMessages()
+        public async Task<IActionResult> GetUserMessages()
         {
-            User userSpecification = await GetUserByLogin(HttpContext.Session.GetString("Login")).FirstAsync();
+            User userSpecification = await GetUserByLogin(HttpContext.Session.GetString("Login")).FirstOrDefaultAsync();
+            if (userSpecification == null)
+            {
+                // Handle the case when the user is not found
+                return NotFound();
+            }
+
+            // Example: Get messages for a specific user
+            var userMessages = await GetMessages(m => m.User.Id == userSpecification.Id);
+
+            // Perform actions with user messages...
+
             return View(await GetSelfMessages(userSpecification));
         }
         public IQueryable<User> GetUserByLogin(string? login) => _context.Users.Where(x => x.Login == login);
         public async Task<List<Message>> GetSelfMessages(User concreteUser)
         {
-            var myDbContext = _context.Messages.Where(m => m.User.Id == concreteUser.Id);
+            return await GetMessages(m => m.User.Id == concreteUser.Id);
+        }
+
+        public async Task<List<Message>> GetMessages(Expression<Func<Message, bool>> predicate)
+        {
+            var myDbContext = _context.Messages.Include(x => x.User).Where(predicate);
             return await myDbContext.ToListAsync();
         }
 
@@ -68,7 +87,7 @@ namespace StoringPassword.Controllers
             {
                 await CreateMessage(message);
                 await SaveChanges();
-                return RedirectToAction(nameof(MyMessages));
+                return RedirectToAction(nameof(GetUserMessages));
             }
             ViewData["UserId"] = new SelectList(GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login", message.UserId);
             return View(message);
@@ -115,7 +134,7 @@ namespace StoringPassword.Controllers
                     else
                         throw;
                 }
-                return RedirectToAction(nameof(MyMessages));
+                return RedirectToAction(nameof(GetUserMessages));
             }
             ViewData["UserId"] = new SelectList(GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login", message.UserId);
             return View(message);
@@ -144,7 +163,7 @@ namespace StoringPassword.Controllers
         {
             await DeleteMessage(id);
             await SaveChanges();
-            return RedirectToAction(nameof(MyMessages));
+            return RedirectToAction(nameof(GetUserMessages));
         }
 
         public async Task DeleteMessage(int id)

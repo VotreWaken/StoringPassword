@@ -1,4 +1,4 @@
-﻿using GuestsBook.Models;
+﻿using StoringPassword.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace StoringPassword.Models

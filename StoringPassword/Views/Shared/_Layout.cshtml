@@ -24,13 +24,13 @@
                     {
                         <ul class="navbar-nav flex-grow-1">
                             <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Messages" asp-action="MyMessages">My messages</a>
+                                <a class="nav-link text-light" asp-area="" asp-controller="Messages" asp-action="GetUserMessages">My messages</a>
                             </li>
                         </ul>
                         <a class="navbar-brand"
                            asp-area=""
                            asp-controller="Messages"
-                           asp-action="MyMessages">
+                           asp-action="GetUserMessages">
                             @Context.Session.GetString("LastName")&nbsp;
                             @Context.Session.GetString("FirstName")
                         </a>
