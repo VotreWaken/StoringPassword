@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StoringPassword.Models;
+using StoringPassword.Repos;
 using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,10 @@ builder.Services.AddDbContext<UserContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     options.LogTo(Console.WriteLine, LogLevel.Information); // Логирование SQL запросов
 });
+
+builder.Services.AddScoped<IMessagesRepository, MessagesRepository>();
+builder.Services.AddScoped<IAccountsRepository, AccountsRepository>();
+
 // Добавляем сервисы MVC
 builder.Services.AddControllersWithViews();
 

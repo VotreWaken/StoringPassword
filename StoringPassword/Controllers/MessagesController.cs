@@ -4,54 +4,21 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Core.Types;
 using System.Linq.Expressions;
+using StoringPassword.Repos;
 namespace StoringPassword.Controllers
 {
     public class MessagesController : Controller
     {
-        private readonly UserContext _context;
+        private readonly IMessagesRepository _repository;
+        public MessagesController(IMessagesRepository repository) => _repository = repository;
 
-        // Controller Constructor
-        public MessagesController(UserContext context)
-        {
-            _context = context;
-        }
-
-        // Controller Index
-        public async Task<IActionResult> Index() => View(await GetAllMessages());
-
-        // Controller 
-        public async Task<List<Message>> GetAllMessages()
-        {
-            var allMessages = await GetMessages(m => true);
-            return allMessages;
-        }
+        // GET: Messages
+        public async Task<IActionResult> Index() => View(await _repository.GetAllMessages());
 
         public async Task<IActionResult> GetUserMessages()
         {
-            User userSpecification = await GetUserByLogin(HttpContext.Session.GetString("Login")).FirstOrDefaultAsync();
-            if (userSpecification == null)
-            {
-                // Handle the case when the user is not found
-                return NotFound();
-            }
-
-            // Example: Get messages for a specific user
-            var userMessages = await GetMessages(m => m.User.Id == userSpecification.Id);
-
-            // Perform actions with user messages...
-
-            return View(await GetSelfMessages(userSpecification));
-        }
-        public IQueryable<User> GetUserByLogin(string? login) => _context.Users.Where(x => x.Login == login);
-        public async Task<List<Message>> GetSelfMessages(User concreteUser)
-        {
-            return await GetMessages(m => m.User.Id == concreteUser.Id);
-        }
-
-        public async Task<List<Message>> GetMessages(Expression<Func<Message, bool>> predicate)
-        {
-            var myDbContext = _context.Messages.Include(x => x.User).Where(predicate);
-            return await myDbContext.ToListAsync();
+            User userSpecification = await _repository.GetUserByLogin(HttpContext.Session.GetString("Login")).FirstAsync();
+            return View(await _repository.GetUserMessages(userSpecification));
         }
 
         // GET: Messages/Details/5
@@ -60,21 +27,18 @@ namespace StoringPassword.Controllers
             if (id == null)
                 return NotFound();
 
-            Message? msg = await GetMessageDetails(id);
+            Message? msg = await _repository.GetMessageDetails(id);
 
             if (msg == null)
                 return NotFound();
 
             return View(msg);
         }
-        public async Task<Message?> GetMessageDetails(int? id) =>
-          await _context.Messages
-          .Include(m => m.User)
-          .FirstOrDefaultAsync(m => m.Id == id);
+
         // GET: Messages/Create
         public IActionResult Create()
         {
-            ViewData["UserId"] = new SelectList(GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login");
+            ViewData["UserId"] = new SelectList(_repository.GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login");
             return View();
         }
 
@@ -85,31 +49,30 @@ namespace StoringPassword.Controllers
         {
             if (ModelState.IsValid)
             {
-                await CreateMessage(message);
-                await SaveChanges();
+                await _repository.CreateMessage(message);
+                await _repository.SaveChanges();
                 return RedirectToAction(nameof(GetUserMessages));
             }
-            ViewData["UserId"] = new SelectList(GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login", message.UserId);
+            ViewData["UserId"] = new SelectList(_repository.GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login", message.UserId);
             return View(message);
         }
-        public async Task CreateMessage(Message msg) => await _context.AddAsync(msg);
-        public async Task SaveChanges() => await _context.SaveChangesAsync();
+
         // GET: Messages/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
                 return NotFound();
 
-            var message = await GetMessage(id);
+            var message = await _repository.GetMessage(id);
 
             if (message == null)
                 return NotFound();
 
-            ViewData["UserId"] = new SelectList(GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login", message.UserId);
+            ViewData["UserId"] = new SelectList(_repository.GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login", message.UserId);
 
             return View(message);
         }
-        public async Task<Message?> GetMessage(int? id) => await _context.Messages.FindAsync(id);
+
         // POST: Messages/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -124,31 +87,29 @@ namespace StoringPassword.Controllers
             {
                 try
                 {
-                    UpdateMessage(message);
-                    await SaveChanges();
+                    _repository.UpdateMessage(message);
+                    await _repository.SaveChanges();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await MessageExists(message.Id))
+                    if (!await _repository.MessageExists(message.Id))
                         return NotFound();
                     else
                         throw;
                 }
                 return RedirectToAction(nameof(GetUserMessages));
             }
-            ViewData["UserId"] = new SelectList(GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login", message.UserId);
+            ViewData["UserId"] = new SelectList(_repository.GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login", message.UserId);
             return View(message);
         }
-        public void UpdateMessage(Message msg) => _context.Update(msg);
 
-        public async Task<bool> MessageExists(int id) => await _context.Messages.AnyAsync(e => e.Id == id);
         // GET: Messages/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
                 return NotFound();
 
-            var message = await GetMessageDetails(id);
+            var message = await _repository.GetMessageDetails(id);
 
             if (message == null)
                 return NotFound();
@@ -161,18 +122,11 @@ namespace StoringPassword.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await DeleteMessage(id);
-            await SaveChanges();
+            await _repository.DeleteMessage(id);
+            await _repository.SaveChanges();
             return RedirectToAction(nameof(GetUserMessages));
         }
 
-        public async Task DeleteMessage(int id)
-        {
-            var message = await GetMessage(id);
-
-            if (message != null)
-                _context.Messages.Remove(message);
-        }
 
     }
 }

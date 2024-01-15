@@ -1,8 +1,7 @@
 ﻿@model StoringPassword.Models.RegisterModel
 
 @{
-    ViewBag.Title = "Register";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Registration";
 }
 
 <h1>Registration</h1>
@@ -10,7 +9,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Register">
+        <form asp-action="Registration">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="FirstName" class="control-label"></label>

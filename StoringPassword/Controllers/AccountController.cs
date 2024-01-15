@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StoringPassword.Models;
+using StoringPassword.Repos;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -8,114 +9,81 @@ namespace StoringPassword.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserContext _context;
-
-        public AccountController(UserContext context)
+        private readonly IAccountsRepository _repository;
+        public AccountController(IAccountsRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
-        // Login 
-        public ActionResult Login()
+        // GET: AccountController/Login
+        [HttpGet]
+        public async Task<IActionResult> Login()
         {
-            return View();
-        }
-        // 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Login(LoginModel logon)
-        {
-            if (ModelState.IsValid)
-            {
-                if(_context.Users.ToList().Count == 0)
-                {
-                    ModelState.AddModelError("", "Wrong login or password!");
-                    return View(logon);
-                }
-                var users = _context.Users.Where(a => a.Login == logon.Login);
-                if (users.ToList().Count == 0)
-                {
-                    ModelState.AddModelError("", "Wrong login or password!");
-                    return View(logon);
-                }
-                var user = users.First();
-                string? salt = user.Salt;
+            if ((await _repository.GetAllUsers()).Count == 0)
+                return RedirectToAction("Regist", "Account");
 
-                //переводим пароль в байт-массив  
-                byte[] password = Encoding.Unicode.GetBytes(salt + logon.Password);
-
-                //создаем объект для получения средств шифрования  
-                var md5 = MD5.Create();
-
-                //вычисляем хеш-представление в байтах  
-                byte[] byteHash = md5.ComputeHash(password);
-
-                StringBuilder hash = new StringBuilder(byteHash.Length);
-                for (int i = 0; i < byteHash.Length; i++)
-                    hash.Append(string.Format("{0:X2}", byteHash[i]));
-
-                if (user.Password != hash.ToString())
-                {
-                    ModelState.AddModelError("", "Wrong login or password!");
-                    return View(logon);
-                }
-                HttpContext.Session.SetString("FirstName", user.FirstName);
-                HttpContext.Session.SetString("LastName", user.LastName);
-                HttpContext.Session.SetString("Login", user.Login);
-                return RedirectToAction("Index", "Home");
-            }
-            return View(logon);
-        }
-
-        // Register 
-        public IActionResult Register()
-        {
             return View();
         }
 
-        // Register 
+        // POST: AccountController/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Register(RegisterModel reg)
+        public async Task<IActionResult> Login(LoginModel model)
         {
-            if (ModelState.IsValid)
+            if ((await _repository.GetAllUsers()).Count == 0)
+                return RedirectToAction("Regist", "Account");
+            if (!ModelState.IsValid)
+                return View(model);
+
+            IQueryable<User> users = _repository.GetUsersByLogin(model);
+
+            if (!users.Any())
             {
-                User user = new User();
-                user.FirstName = reg.FirstName;
-                user.LastName = reg.LastName;
-                user.Login = reg.Login;
-
-                byte[] saltbuf = new byte[16];
-
-                RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
-                randomNumberGenerator.GetBytes(saltbuf);
-
-                StringBuilder sb = new StringBuilder(16);
-                for (int i = 0; i < 16; i++)
-                    sb.Append(string.Format("{0:X2}", saltbuf[i]));
-                string salt = sb.ToString();
-
-                //переводим пароль в байт-массив  
-                byte[] password = Encoding.Unicode.GetBytes(salt + reg.Password);
-
-                //создаем объект для получения средств шифрования  
-                var md5 = MD5.Create();
-
-                //вычисляем хеш-представление в байтах  
-                byte[] byteHash = md5.ComputeHash(password);
-
-                StringBuilder hash = new StringBuilder(byteHash.Length);
-                for (int i = 0; i < byteHash.Length; i++)
-                    hash.Append(string.Format("{0:X2}", byteHash[i]));
-
-                user.Password = hash.ToString();
-                user.Salt = salt;
-                _context.Users.Add(user);
-                _context.SaveChanges();
-                return RedirectToAction("Login");
+                ModelState.AddModelError("", "Incorrect login or password!");
+                return View(model);
             }
 
-            return View(reg);
+            User user = users.First();
+
+            if (await _repository.IsPasswordCorrect(user, model))
+            {
+                ModelState.AddModelError("", "Incorrect login or password!");
+                return View(model);
+            }
+            HttpContext.Session.SetString("FirstName", user.FirstName ?? string.Empty);
+            HttpContext.Session.SetString("LastName", user.LastName ?? string.Empty);
+            HttpContext.Session.SetString("Login", user.Login);
+            return RedirectToAction("Index", "Home");
+        }
+
+        // GET: AccountController/Registration
+        [HttpGet]
+        public ActionResult Registration() => View();
+
+        // POST: AccountController/Registration
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Registration(RegisterModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+            if (await _repository.IsLoginExists(model.Login))
+            {
+                ModelState.AddModelError("", "This login is taken!");
+                return View(model);
+            }
+
+            User user = new()
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Login = model.Login
+            };
+            user = await _repository.CreateAndHashPassword(user, model);
+
+            await _repository.AddUserToDb(user);
+
+            return RedirectToAction("Login");
         }
     }
 }
