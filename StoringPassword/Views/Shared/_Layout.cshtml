@@ -3,138 +3,241 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"]</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-black border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Messages" asp-action="Index">GuestsBook</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-evenly">
+	<header>
+		<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-black border-bottom box-shadow mb-3">
+			<div class="container-fluid">
+				<a class="navbar-brand" asp-area="" asp-controller="Messages" asp-action="Index">GuestsBook</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+						aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="navbar-collapse collapse d-sm-inline-flex justify-content-evenly">
 
-                    @if (Context.Session.GetString("LastName") != null
-                    && Context.Session.GetString("FirstName") != null)
-                    {
-                        <ul class="navbar-nav flex-grow-1">
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Messages" asp-action="GetUserMessages">My messages</a>
-                            </li>
-                        </ul>
-                        <a class="navbar-brand"
-                           asp-area=""
-                           asp-controller="Messages"
-                           asp-action="GetUserMessages">
-                            @Context.Session.GetString("LastName")&nbsp;
-                            @Context.Session.GetString("FirstName")
-                        </a>
-                        <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Logout">Logout</a>
-                    }
-                    else
-                    {
-                        <ul class="navbar-nav flex-grow-1">
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Messages" asp-action="Index">Messages</a>
-                            </li>
-                        </ul>
-                        <a class="navbar-brand" data-bs-toggle="modal" data-bs-target="#registrationModal">Registration</a>
+						<div id="authenticatedUser" style="display: none;">
+							<a class="navbar-brand" asp-area="" asp-controller="Messages" asp-action="GetUserMessages">
+								<span id="userFullName"></span>&nbsp;
+								<span id="userLogin"></span>
+							</a>
+						<a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Logout" id="logoutLink">Logout</a>
+						</div>
 
-                        /* Modal Window Registration */
-                        @* <div class="modal fade" id="registrationModal" tabindex="-1" aria-labelledby="registrationModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="registrationModalLabel">Registration</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form id="registrationForm">
-                                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                            <div class="form-group">
-                                                <label for="FirstName" class="control-label">FirstName</label>
-                                                <input type="text" name="FirstName" class="form-control" />
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="LastName" class="control-label">LastName</label>
-                                                <input type="text" name="LastName" class="form-control" />
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="Login" class="control-label">Login</label>
-                                                <input type="text" name="Login" class="form-control" />
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="Password" class="control-label">Password</label>
-                                                <input type="text" name="Password" class="form-control" />
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="PasswordConfirm" class="control-label">PasswordConfirm</label>
-                                                <input type="text" name="PasswordConfirm" class="form-control" />
-                                            </div>
-                                            <div class="form-group">
-                                                <input id="registerButton" type="submit" value="Check in" class="btn btn-primary" />
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
- *@
-                        <a class="navbar-brand" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a>
+					<div id="guestUser">
+						<ul class="navbar-nav flex-grow-1">
+							<li class="nav-item">
+								<a class="nav-link text-light" asp-area="" asp-controller="Messages" asp-action="Index">Messages</a>
+							</li>
+						</ul>
+						<a class="navbar-brand" data-bs-toggle="modal" data-bs-target="#registrationModal">Registration</a>
+						<a class="navbar-brand" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a>
+					</div>
 
-                        /* Modal Window Login */
-                        @* <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="registrationModalLabel">Login</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form id="loginForm">
-                                            <div class="form-group">
-                                                <label for="Login" class="control-label">Login</label>
-                                                <input type="text" name="Login" class="form-control" />
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="Password" class="control-label">Password</label>
-                                                <input type="text" name="Password" class="form-control" />
-                                            </div>
-                                            <div class="form-group">
-                                                <input id="loginButton" type="submit" value="Logon" class="btn btn-primary" />
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <input type="submit" value="Check in" class="btn btn-primary" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div> *@
-                    }
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: true)
+					<div class="modal fade" id="registrationModal" tabindex="-1" aria-labelledby="registrationModalLabel" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="registrationModalLabel">Registration</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+								</div>
+								<div class="modal-body">
+									<form id="registrationForm">
+										<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+										<div class="form-group">
+											<label for="FirstName" class="control-label">FirstName</label>
+											<input type="text" id="FirstName" name="FirstName" class="form-control" />
+										</div>
+										<div class="form-group">
+											<label for="LastName" class="control-label">LastName</label>
+											<input type="text" id="LastName" name="LastName" class="form-control" />
+										</div>
+										<div class="form-group">
+											<label for="Login" class="control-label">Login</label>
+											<input type="text" id="Login" name="Login" class="form-control" />
+										</div>
+										<div class="form-group">
+											<label for="Password" class="control-label">Password</label>
+											<input id="Password" name="Password" class="form-control" />
+										</div>
+										<div class="form-group">
+											<label for="PasswordConfirm" class="control-label">PasswordConfirm</label>
+											<input id="PasswordConfirm" name="PasswordConfirm" class="form-control" />
+										</div>
+										<div class="form-group">
+											<input id="registerButton" type="submit" value="Check in" class="btn btn-primary" />
+										</div>
+									</form>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+								</div>
+							</div>
+						</div>
+					</div>
 
+					<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="registrationModalLabel">Login</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+								</div>
+								<div class="modal-body">
+									<form id="loginForm">
+										<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+										<div class="form-group">
+											<label for="Login" class="control-label">Login</label>
+											<input type="text" name="Login" class="form-control" />
+											<span class="text-danger" id="loginError"></span>
+										</div>
+										<div class="form-group">
+											<label for="Password" class="control-label">Password</label>
+											<input type="password" name="Password" class="form-control" />
+											<span class="text-danger" id="passwordError"></span>
+										</div>
+										<div class="form-group">
+											<input id="loginButton" type="submit" value="Logon" class="btn btn-primary" />
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</nav>
+	</header>
+	<div class="container">
+		<main role="main" class="pb-3">
+			@RenderBody()
+		</main>
+	</div>
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+	@await RenderSectionAsync("Scripts", required: true)
+	<script>
+		// Функция для получения информации о пользователе
+		function getUserInfo() {
+			$.ajax({
+				url: '@Url.Action("GetUserInfo", "Account")',
+				type: 'GET',
+				success: function (data) {
+					// Обновляем информацию о пользователе на странице
+					updateUserInfo(data);
+					console.log(data);
+				},
+				error: function () {
+					console.error('Ошибка при получении информации о пользователе.');
+				}
+			});
+		}
+
+		// Функция для обновления информации о пользователе на странице
+		function updateUserInfo(userInfo) {
+			if (userInfo.firstName && userInfo.lastName) {
+				// Покажите элементы, связанные с авторизованным пользователем
+				$("#authenticatedUser").show();
+				$("#guestUser").hide();
+				console.log("Update Good");
+				console.log(userInfo);
+				
+				// Обновите информацию о пользователе
+				$("#userFullName").text(userInfo.firstName + ' ' + userInfo.lastName);
+				$("#userLogin").text(userInfo.Login);
+			} else {
+				// Покажите элементы, связанные с гостем
+				$("#authenticatedUser").hide();
+				console.log("Update not good");
+				console.log(userInfo);
+				$("#guestUser").show();
+			}
+		}
+
+		// Вызовите функцию getUserInfo при загрузке страницы
+		$(document).ready(function () {
+			getUserInfo();
+		});
+
+
+		// LOGIN REGISTER !
+
+		$(document).ready(function () {
+			// Отправка формы через AJAX
+			$("#registerButton").on("click", function (e) {
+				e.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+				var formData = new FormData($("#registrationForm")[0]); // Создаем объект FormData из формы
+				$.ajax({
+					type: 'POST',
+					url: '@Url.Action("Registration", "Account")',
+					contentType: false,
+					processData: false,
+					data: formData,
+					success: function (data) {
+						$("#registrationModal").modal("hide");
+					},
+					error: function (data) {
+						console.log(data.responseText);
+					}
+				});
+			});
+
+			// Отправка формы входа через AJAX
+			$("#loginButton").on("click", function (e) {
+				e.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+				var loginData = new FormData($("#loginForm")[0]); // Создаем объект FormData из формы
+				$.ajax({
+					type: 'POST',
+					url: '@Url.Action("Login", "Account")',
+					contentType: false,
+					processData: false,
+					data: loginData,
+					success: function (data) {
+						getUserInfo();
+						$("#loginModal").modal("hide");
+						// Обработка успешного входа
+						// window.location.replace("/Home/Index"); // Пример перенаправления на другую страницу
+					},
+					error: function (data) {
+						console.error(data.responseText);
+					}
+				});
+			});
+
+		});
+
+		// LOGOUT 
+
+		$("#logoutLink").on("click", function (e) {
+			e.preventDefault();
+
+			// Выполнить выход пользователя через AJAX
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("Logout", "Home")',
+				success: function (data) {
+					// Обработать успешный выход
+					getUserInfo();
+					// Например, перенаправить пользователя на страницу входа
+				},
+				error: function (data) {
+					// Обработать ошибку
+					console.error(data.responseText);
+				}
+			});
+		});
+
+		// Messages 
+
+
+
+	</script>
 </body>
 </html>

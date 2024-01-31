@@ -7,14 +7,6 @@
 }
 
 
-@if (Context.Session.GetString("LastName") != null
-		&& Context.Session.GetString("FirstName") != null)
-{
-	<p>
-		<a asp-action="Create">Create New Message</a>
-	</p>
-}
-
 <table class="table">
 	<thead>
 		<tr>
@@ -38,15 +30,72 @@
 					@Html.DisplayFor(modelItem => item.User.Login)
 				</td>
 				<td>
-					<a asp-action="Details" asp-route-id="@item.Id">Details</a>
+
+					<a href="javascript:void(0)" class="detailsMessage" data-id="@item.Id">Details</a>
 				</td>
 			</tr>
 		}
 	</tbody>
 </table>
+
+<!-- Модальное окно с деталями сообщения -->
+<div class="modal" tabindex="-1" role="dialog" id="detailsMessageModal">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Message Details</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p><strong>ID:</strong> <span id="detailsMessageId"></span></p>
+				<p><strong>Message:</strong> <span id="detailsMessageText"></span></p>
+				<p><strong>User ID:</strong> <span id="detailsUserId"></span></p>
+			</div>
+		</div>
+	</div>
+</div>
+
+
 @section Scripts
 {
+	<script>
+		$(".detailsMessage").click(function () {
+			var messageId = $(this).data("id");
 
+			console.log("Details button clicked for messageId:", messageId);
+			let formData = new FormData();
+			formData.append("Id", messageId);
+
+			$.ajax({
+				url: '/Messages/Details/' + messageId,
+				contentType: false,
+				processData: false,
+				data: formData,
+				success: function (data) {
+					// Проверяем, является ли data объектом
+					if (typeof data === 'object') {
+						// Используйте полученные данные для отображения в модальном окне
+						console.log("Received JSON object:", data);
+						// Далее ваш код обновления модального окна с деталями
+						$("#detailsMessageId").text(data.id);
+						$("#detailsMessageText").text(data.mesage);
+						$("#detailsUserId").text(data.userId);
+
+						// Открываем модальное окно
+						$("#detailsMessageModal").modal("show");
+					} else {
+						// Если data не является объектом, выводим предупреждение
+						console.warn("Received unexpected data format:", data);
+					}
+				},
+				error: function (error) {
+					console.error("Error loading JSON:", error);
+				}
+			});
+		});
+	</script>
 	@{
 		await Html.RenderPartialAsync("_ValidationScriptsPartial");
 	}

@@ -54,7 +54,18 @@ namespace StoringPassword.Controllers
 
             return Ok(); // Вернуть HTTP 200 OK, чтобы указать успешный вход
         }
+        [HttpGet]
+        public IActionResult GetUserInfo()
+        {
+            var userInfo = new
+            {
+                FirstName = HttpContext.Session.GetString("FirstName"),
+                LastName = HttpContext.Session.GetString("LastName"),
+                Login = HttpContext.Session.GetString("Login")
+            };
 
+            return Json(userInfo);
+        }
         // GET: AccountController/Registration
         // [HttpGet]
         // public ActionResult Registration() => View();

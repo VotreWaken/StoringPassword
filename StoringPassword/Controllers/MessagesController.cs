@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Core.Types;
 using System.Linq.Expressions;
 using StoringPassword.Repos;
+using Newtonsoft.Json;
 namespace StoringPassword.Controllers
 {
     public class MessagesController : Controller
@@ -21,6 +22,19 @@ namespace StoringPassword.Controllers
             return View(await _repository.GetUserMessages(userSpecification));
         }
 
+        public async Task<IActionResult> GetJsonUserMessages()
+        {
+            User userSpecification = await _repository.GetUserByLogin(HttpContext.Session.GetString("Login")).FirstAsync();
+            var messages = await _repository.GetUserMessages(userSpecification);
+
+            var jsonSettings = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            };
+
+            return Json(JsonConvert.SerializeObject(messages, jsonSettings));
+        }
+
         // GET: Messages/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -32,7 +46,7 @@ namespace StoringPassword.Controllers
             if (msg == null)
                 return NotFound();
 
-            return View(msg);
+            return Json(msg);
         }
 
         // GET: Messages/Create
@@ -44,17 +58,12 @@ namespace StoringPassword.Controllers
 
         // POST: Messages/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Mesage,UserId")] Message message)
         {
-            if (ModelState.IsValid)
-            {
-                await _repository.CreateMessage(message);
-                await _repository.SaveChanges();
-                return RedirectToAction(nameof(GetUserMessages));
-            }
-            ViewData["UserId"] = new SelectList(_repository.GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login", message.UserId);
-            return View(message);
+            Console.WriteLine($"Received data: Id={message.Id}, Mesage={message.Mesage}, UserId={message.UserId}");
+            await _repository.CreateMessage(message);
+            await _repository.SaveChanges();
+            return Json(new { success = true, message = "Message created successfully" });
         }
 
         // GET: Messages/Edit/5
@@ -68,18 +77,16 @@ namespace StoringPassword.Controllers
             if (message == null)
                 return NotFound();
 
-            ViewData["UserId"] = new SelectList(_repository.GetUserByLogin(HttpContext.Session.GetString("Login")), "Id", "Login", message.UserId);
-
-            return View(message);
+            return Json(message); // Возвращаем данные в формате JSON
         }
 
         // POST: Messages/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Mesage,UserId")] Message message)
         {
+            Console.WriteLine($"Received data: Id={message.Id}, Mesage={message.Mesage}, UserId={message.UserId}");
             if (id != message.Id)
                 return NotFound();
 
@@ -104,27 +111,29 @@ namespace StoringPassword.Controllers
         }
 
         // GET: Messages/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-                return NotFound();
+        //public async Task<IActionResult> Delete(int? id)
+        //{
+        //    if (id == null)
+        //        return NotFound();
 
-            var message = await _repository.GetMessageDetails(id);
+        //    var message = await _repository.GetMessageDetails(id);
 
-            if (message == null)
-                return NotFound();
+        //    if (message == null)
+        //        return NotFound();
 
-            return View(message);
-        }
+        //    return View(message);
+        //}
 
         // POST: Messages/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
+        [HttpDelete]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            Console.WriteLine($"Confirmed {id}");
             await _repository.DeleteMessage(id);
             await _repository.SaveChanges();
-            return RedirectToAction(nameof(GetUserMessages));
+
+            // Возвращаем JSON с информацией об успешном удалении
+            return Json(new { success = true, message = "Message deleted successfully" });
         }
 
 

@@ -15,7 +15,7 @@ namespace StoringPassword.Controllers
         public ActionResult Logout()
         {
             HttpContext.Session.Clear();
-            return RedirectToAction("Login", "Account");
-        }
+            return Ok();
+		}
     }
 }

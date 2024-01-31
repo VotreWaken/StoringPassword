@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using StoringPassword.Models;
 
 namespace StoringPassword.Models
@@ -25,7 +26,7 @@ namespace StoringPassword.Models
 
         [NotNull]
         public string? Salt { get; set; }
-
+        [JsonIgnore]
         public virtual ICollection<Message>? Messages { get; set; }
     }
 }

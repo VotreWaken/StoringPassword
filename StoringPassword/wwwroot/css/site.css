@@ -25,3 +25,14 @@ th {
     font-size: 24px;
 }
 
+#guestUser {
+    DISPLAY: FLEX;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#authenticatedUser {
+    DISPLAY: FLEX;
+    justify-content: right;
+    width: 100%;
+}
