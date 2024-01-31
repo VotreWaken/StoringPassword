@@ -27,50 +27,53 @@ namespace StoringPassword.Controllers
 
         // POST: AccountController/Login
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginModel model)
         {
+            Console.WriteLine("Login: " + model.Login);
+            Console.WriteLine("Password: " + model.Password);
+
             if ((await _repository.GetAllUsers()).Count == 0)
                 return RedirectToAction("Regist", "Account");
+
             if (!ModelState.IsValid)
-                return View(model);
+                return BadRequest("Incorrect login or password!");
 
             IQueryable<User> users = _repository.GetUsersByLogin(model);
 
             if (!users.Any())
-            {
-                ModelState.AddModelError("", "Incorrect login or password!");
-                return View(model);
-            }
+                return BadRequest("Incorrect login or password!");
 
             User user = users.First();
 
             if (await _repository.IsPasswordCorrect(user, model))
-            {
-                ModelState.AddModelError("", "Incorrect login or password!");
-                return View(model);
-            }
+                return BadRequest("Incorrect login or password!");
+
             HttpContext.Session.SetString("FirstName", user.FirstName ?? string.Empty);
             HttpContext.Session.SetString("LastName", user.LastName ?? string.Empty);
             HttpContext.Session.SetString("Login", user.Login);
-            return RedirectToAction("Index", "Home");
+
+            return Ok(); // Вернуть HTTP 200 OK, чтобы указать успешный вход
         }
 
         // GET: AccountController/Registration
-        [HttpGet]
-        public ActionResult Registration() => View();
+        // [HttpGet]
+        // public ActionResult Registration() => View();
 
         // POST: AccountController/Registration
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Registration(RegisterModel model)
         {
+            Console.WriteLine("Login: " + model.Login);
+            Console.WriteLine("Password: " + model.Password);
             if (!ModelState.IsValid)
-                return View(model);
+            {
+                string response1 = "Регистрация Провалилась Некорректные данные!";
+                return Json(response1);
+            }
             if (await _repository.IsLoginExists(model.Login))
             {
-                ModelState.AddModelError("", "This login is taken!");
-                return View(model);
+                string response2 = "Регистрация Провалилась Логин Уже Занят!";
+                return Json(response2);
             }
 
             User user = new()
@@ -83,7 +86,8 @@ namespace StoringPassword.Controllers
 
             await _repository.AddUserToDb(user);
 
-            return RedirectToAction("Login");
+            string response = "Регистрация Успешна!";
+            return Json(response);
         }
     }
 }

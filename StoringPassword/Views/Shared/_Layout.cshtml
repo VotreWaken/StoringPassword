@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -6,7 +8,6 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/GuestsBook.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
@@ -43,13 +44,83 @@
                                 <a class="nav-link text-light" asp-area="" asp-controller="Messages" asp-action="Index">Messages</a>
                             </li>
                         </ul>
-                        <a class="navbar-brand" asp-area="" asp-controller="Account" asp-action="Registration">Registration</a>
-                        <a class="navbar-brand"
-                           asp-area=""
-                           asp-controller="Account"
-                           asp-action="Login">
-                            LOGIN
-                        </a>
+                        <a class="navbar-brand" data-bs-toggle="modal" data-bs-target="#registrationModal">Registration</a>
+
+                        /* Modal Window Registration */
+                        @* <div class="modal fade" id="registrationModal" tabindex="-1" aria-labelledby="registrationModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="registrationModalLabel">Registration</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="registrationForm">
+                                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                            <div class="form-group">
+                                                <label for="FirstName" class="control-label">FirstName</label>
+                                                <input type="text" name="FirstName" class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="LastName" class="control-label">LastName</label>
+                                                <input type="text" name="LastName" class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="Login" class="control-label">Login</label>
+                                                <input type="text" name="Login" class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="Password" class="control-label">Password</label>
+                                                <input type="text" name="Password" class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="PasswordConfirm" class="control-label">PasswordConfirm</label>
+                                                <input type="text" name="PasswordConfirm" class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <input id="registerButton" type="submit" value="Check in" class="btn btn-primary" />
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+ *@
+                        <a class="navbar-brand" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a>
+
+                        /* Modal Window Login */
+                        @* <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="registrationModalLabel">Login</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="loginForm">
+                                            <div class="form-group">
+                                                <label for="Login" class="control-label">Login</label>
+                                                <input type="text" name="Login" class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="Password" class="control-label">Password</label>
+                                                <input type="text" name="Password" class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <input id="loginButton" type="submit" value="Logon" class="btn btn-primary" />
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <input type="submit" value="Check in" class="btn btn-primary" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div> *@
                     }
                 </div>
             </div>
@@ -63,6 +134,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    @await RenderSectionAsync("Scripts", required: true)
+
 </body>
 </html>

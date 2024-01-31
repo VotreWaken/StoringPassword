@@ -4,6 +4,7 @@
     ViewBag.Title = "Login";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <h1>Logon</h1>
 <hr />
 <div class="row">
@@ -24,10 +25,129 @@
                 <input type="submit" value="Logon" class="btn btn-primary" />
             </div>
         </form>
+        <div class="modal fade" id="registrationModal" tabindex="-1" aria-labelledby="registrationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="registrationModalLabel">Registration</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="registrationForm">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <div class="form-group">
+                                <label for="FirstName" class="control-label">FirstName</label>
+                                <input type="text" id="FirstName" name="FirstName" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label for="LastName" class="control-label">LastName</label>
+                                <input type="text" id="LastName" name="LastName" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label for="Login" class="control-label">Login</label>
+                                <input type="text" id="Login" name="Login" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label for="Password" class="control-label">Password</label>
+                                <input id="Password" name="Password" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label for="PasswordConfirm" class="control-label">PasswordConfirm</label>
+                                <input id="PasswordConfirm" name="PasswordConfirm" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <input id="registerButton" type="submit" value="Check in" class="btn btn-primary" />
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="registrationModalLabel">Login</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="loginForm">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <div class="form-group">
+                                <label for="Login" class="control-label">Login</label>
+                                <input asp-for="Login" class="form-control" />
+                                <span asp-validation-for="Login" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="Password" class="control-label">Password</label>
+                                <input asp-for="Password" class="form-control" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <input id="loginButton" type="submit" value="Logon" class="btn btn-primary" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Отправка формы через AJAX
+            $("#registerButton").on("click", function (e) {
+                e.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+                var formData = new FormData($("#registrationForm")[0]); // Создаем объект FormData из формы
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("Registration", "Account")',
+                    contentType: false,
+                    processData: false,
+                    data: formData,
+                    success: function (data) {
+                        alert("Work Register");
+                        $("#registrationModal").modal("hide");
+                    },
+                    error: function (data) {
+                        alert("Not work Registration");
+                        console.log(data.responseText);
+                    }
+                });
+            });
+
+            // Отправка формы входа через AJAX
+            $("#loginButton").on("click", function (e) {
+                e.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+                var loginData = new FormData($("#loginForm")[0]); // Создаем объект FormData из формы
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("Login", "Account")',
+                    contentType: false,
+                    processData: false,
+                    data: loginData,
+                    success: function (data) {
+                        alert("Work Login");
+                        // Обработка успешного входа
+                        // window.location.replace("/Home/Index"); // Пример перенаправления на другую страницу
+                    },
+                    error: function (data) {
+                        alert("Not work Login");
+                        console.error(data.responseText);
+                    }
+                });
+            });
+
+        });
+    </script>
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
