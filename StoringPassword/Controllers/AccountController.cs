@@ -52,7 +52,7 @@ namespace StoringPassword.Controllers
             HttpContext.Session.SetString("LastName", user.LastName ?? string.Empty);
             HttpContext.Session.SetString("Login", user.Login);
 
-            return Ok(); // Вернуть HTTP 200 OK, чтобы указать успешный вход
+            return Ok();
         }
         [HttpGet]
         public IActionResult GetUserInfo()

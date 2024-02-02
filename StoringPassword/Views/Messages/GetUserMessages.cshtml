@@ -65,6 +65,7 @@
             </div>
             <div class="modal-body">
                 <form id="createMessageForm">
+                    <input type="hidden" id="userId" />
                     <input type="hidden" id="messageId" />
                     <textarea id="messageText" rows="4" cols="50"></textarea><br />
                     <button type="button" class="btn btn-primary" id="saveCreateMessage">Save</button>
@@ -78,20 +79,20 @@
 @section scripts {
     <script>
         $(document).ready(function () {
-            // Ваш код для получения списка сообщений и отображения на странице
-
-            // Пример обработчика для открытия формы создания нового сообщения
             $("#createMessage").click(function () {
                 $("#messageId").val("");
+                $("#userId").val("");
                 $("#messageText").val("");
                 $("#createMessageModal").modal("show");
             });
 
             // ТУТ ПОФИКСИТЬ CREATE ЧТОБЫ БЫЛ ID СООБЩЕНИЯ И USER
-            // Обработчик сохранения созданного сообщения
+            // Save Message
             $("#saveCreateMessage").click(function () {
                 var formData = new FormData();
                 formData.append("Mesage", $("#messageText").val());
+                formData.append("Id", $("#messageId").val());
+                formData.append("UserId", $("#userId").val());
 
                 $.ajax({
                     type: "POST",
@@ -100,19 +101,16 @@
                     processData: false,
                     contentType: false,
                     success: function (data) {
-                        // Обработка успешного создания сообщения
-                        // Обновление списка сообщений и закрытие модального окна
                         $("#createMessageModal").modal("hide");
                         refreshMessagesTable();
                     },
                     error: function (error) {
-                        // Обработка ошибок
                         console.error("Error creating message:", error);
                     }
                 });
             });
 
-            // Обработчик открытия модального окна редактирования
+            // Edit
             $(".editMessage").click(function () {
                 var messageId = $(this).data("id");
 
@@ -122,17 +120,14 @@
                     url: "/Messages/Edit/" + messageId,
                     dataType: 'json',
                     success: function (data) {
-                        // Проверяем, является ли data объектом
+
                         if (typeof data === 'object') {
                             $("#editMessageId").val(data.id);
                             $("#editMessageText").val(data.Mesage);
                             $("#userId").val(data.userId);
                             console.log("Received JSON object:", data);
                             $("#editMessageModal").modal("show");
-                            // Далее ваш код обновления модального окна
-                            // ...
                         } else {
-                            // Если data не является объектом, выводим предупреждение
                             console.warn("Received unexpected data format:", data);
                         }
                     },
@@ -159,19 +154,17 @@
                     processData: false,
                     contentType: false,
                     success: function (data) {
-                        // Обработка успешного сохранения
-                        // Обновление списка сообщений и закрытие модального окна
                         $("#editMessageModal").modal("hide");
                         refreshMessagesTable();
                     },
                     error: function (error) {
-                        // Обработка ошибок
+
                         console.error("Error saving edited message:", error);
                     }
                 });
             });
 
-            // Пример обработчика для отмены формы
+
             $("#cancelMessage").click(function () {
                 $("#messageForm").hide();
             });
@@ -194,15 +187,12 @@
                         data: formData,
                         success: function (data) {
                             if (data.success) {
-                                // Если удаление прошло успешно, обновляем список сообщений
                                 refreshMessagesTable();
                             } else {
-                                // Если удаление не удалось, выводим сообщение об ошибке
                                 console.error("Error deleting message:", data.message);
                             }
                         },
                         error: function (error) {
-                            // Обработка ошибок удаления
                             console.error("Error deleting message:", error);
                         }
                     });
@@ -213,7 +203,7 @@
 
 
 
-        // Пример функции для обновления списка сообщений
+        // Refresh All Messages
         function refreshMessagesTable() {
             $.get("/Messages/GetJsonUserMessages", function (data) {
                 var messages = JSON.parse(data);

@@ -60,7 +60,11 @@ namespace StoringPassword.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([Bind("Id,Mesage,UserId")] Message message)
         {
-            Console.WriteLine($"Received data: Id={message.Id}, Mesage={message.Mesage}, UserId={message.UserId}");
+            Console.WriteLine($"Received data: Id={message.Id}, Mesage={message.Mesage}, UserId={_repository.GetUserByLogin(HttpContext.Session.GetString("Login"))}");
+            foreach (var item in _repository.GetUserByLogin(HttpContext.Session.GetString("Login")))
+            {
+                message.UserId = item.Id;
+            }
             await _repository.CreateMessage(message);
             await _repository.SaveChanges();
             return Json(new { success = true, message = "Message created successfully" });
@@ -132,7 +136,6 @@ namespace StoringPassword.Controllers
             await _repository.DeleteMessage(id);
             await _repository.SaveChanges();
 
-            // Возвращаем JSON с информацией об успешном удалении
             return Json(new { success = true, message = "Message deleted successfully" });
         }
 

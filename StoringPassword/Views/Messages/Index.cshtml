@@ -61,6 +61,8 @@
 @section Scripts
 {
 	<script>
+
+		// Details
 		$(".detailsMessage").click(function () {
 			var messageId = $(this).data("id");
 
@@ -74,19 +76,16 @@
 				processData: false,
 				data: formData,
 				success: function (data) {
-					// Проверяем, является ли data объектом
+
 					if (typeof data === 'object') {
-						// Используйте полученные данные для отображения в модальном окне
 						console.log("Received JSON object:", data);
-						// Далее ваш код обновления модального окна с деталями
 						$("#detailsMessageId").text(data.id);
 						$("#detailsMessageText").text(data.mesage);
 						$("#detailsUserId").text(data.userId);
 
-						// Открываем модальное окно
 						$("#detailsMessageModal").modal("show");
 					} else {
-						// Если data не является объектом, выводим предупреждение
+
 						console.warn("Received unexpected data format:", data);
 					}
 				},
